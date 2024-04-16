@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# envs
+.env
+.venv
+env/
+venv/
+
+# specific files
+*.csv
+*.out
+*.json
+*.vscode
+*.log
+*.jpg
+*.png

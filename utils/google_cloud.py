@@ -32,7 +32,7 @@ def bulk_import_product_sets(
     Args:
         project_id: Id of the project.
         location: A compute region name.
-        gcs_uri: Google Cloud Storage URI.
+        csv_bulk_gcs_uri: Google Cloud Storage URI.
             Target files must be in Product Search CSV format.
     """
 

@@ -19,8 +19,8 @@ class BahagAssetsAPI:
         self.api_url = urljoin(base_url, "/v1/assets-masterdata/")
         self.logger = logging.getLogger(__name__)
         self.adapter = adapters.HTTPAdapter(
-            pool_connections=32,
-            pool_maxsize=64
+            pool_connections=64,
+            pool_maxsize=128
             )
         self.session.mount('http://', self.adapter)
         self.session.mount('https://', self.adapter)

@@ -3,6 +3,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 from pathlib import Path
+from distutils.util import strtobool
 
 from dotenv import load_dotenv
 from google.cloud import storage
@@ -30,7 +31,7 @@ POSTGRES_SERVER = os.environ.get("POSTGRES_SERVER")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 POSTGRES_DB = os.environ.get("POSTGRES_DB")
-BAHAG_BASE_API_URL = os.environ.get("BAHAG_BASE_API_URL")
+BAHAG_BASE_API_URL = os.environ.get("BAHAG_BASE_API_URL", "https://api.bauhaus")
 ASSETS_API_USER = os.environ.get("ASSETS_API_USER")
 ASSETS_API_PASSWORD = os.environ.get("ASSETS_API_PASSWORD")
 
@@ -44,11 +45,14 @@ MEDIA_TYPE = ("IMAGE_JPG", )
 OUT_DIR = Path(__file__).parent / "OUTPUT"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT_CSV_FILE = OUT_DIR / "product_vision_bulk_import.csv"
+
+PROCESS_MOODSHOTS_ONLY = bool(strtobool(os.environ.get("PROCESS_MOODSHOTS_ONLY", "False")))
+SAVE_MOODSHOTS = bool(strtobool(os.environ.get("SAVE_MOODSHOTS", "False")))
 OUT_MOOD_SHOTS_FILE = OUT_DIR / "test_mood_shots.out"
 
 # https://cloud.google.com/vision/product-search/docs/csv-format
 LINES_PER_OUT_FILE = 20_000
-
+PRODUCT_CATEGORY = os.environ.get("PRODUCT_CATEGORY", "homegoods-v2")
 PRODUCT_SET = "bahag_products"
 
 
@@ -116,16 +120,18 @@ def process(assets_client: BahagAssetsAPI, bahag_id: str):
     if not item_assets:
         logger.warning(f"No API data for id={bahag_id}")
         return
-    # process only items with mood shots to save them and later use as test data
-    has_mood_shots = any([img["type"] == "mood_shot" for img in item_assets["images"]])
 
     if not item_assets["images"]:
         logger.warning(f"No assets for id={bahag_id}")
         return
     
-    if not has_mood_shots:
-        logger.warning(f"No mood shots for id={bahag_id}")
-        return
+    # if set, process only items with mood shots to save them 
+    # and later use as test data (requires "SAVE_MOODSHOTS"=True)
+    if PROCESS_MOODSHOTS_ONLY:
+        has_mood_shots = any([img["type"] == "mood_shot" for img in item_assets["images"]])
+        if not has_mood_shots:
+            logger.warning(f"No mood shots for id={bahag_id}")
+            return
     
     result = {"bulk_entries": [], "moodshot_entries": []}
 
@@ -161,12 +167,13 @@ def process(assets_client: BahagAssetsAPI, bahag_id: str):
             remote_fname=bucket_filename
             )
         
-        bulk_entry = (
-            gcs_url, "", PRODUCT_SET, bahag_id,
-            "homegoods-v2", "bahag_product", f"\"type={asset_type}\"", ""
-            )
+        bulk_entry = {
+            "gcs_url": gcs_url, 
+            "bahag_id": bahag_id,
+            "asset_type":asset_type
+            }
         
-        result["bulk_entries"].append(f"{','.join(bulk_entry)}\n")
+        result["bulk_entries"].append(bulk_entry)
         
         return result
 
@@ -180,17 +187,30 @@ def run_job():
         base_url=BAHAG_BASE_API_URL
         ) as assets_client:
         with RotatingTextWriter(OUT_CSV_FILE, max_lines=LINES_PER_OUT_FILE) as bulk_file:
-            with OUT_MOOD_SHOTS_FILE.open(mode="at", newline="") as ms_file:
-                for batch in get_bahag_products():
-                    total_count += len(batch)
-                    with ThreadPoolExecutor(max_workers=N_THREADS) as pool:
-                        futures = (pool.submit(process, assets_client, bahag_id) for bahag_id in batch)
-                        for future in as_completed(futures):
-                            result = future.result()
+            for batch in get_bahag_products():
+                total_count += len(batch)
+                with ThreadPoolExecutor(max_workers=N_THREADS) as pool:
+                    futures = (pool.submit(process, assets_client, bahag_id) for bahag_id in batch)
+                    for future in as_completed(futures):
+                        result = future.result()
+                        if result:
                             for bulk_entry in result["bulk_entries"]:
-                                bulk_file.write(bulk_entry)
-                            for mood_shot_entry in result["moodshot_entries"]:
-                                ms_file.write(mood_shot_entry)
+                                csv_lines_saved = bulk_file.total_lines_written
+                                if not csv_lines_saved % 1_000_000:
+                                    product_set = f"{PRODUCT_SET}_{str(csv_lines_saved).rstrip('0')}"
+                                else:
+                                    product_set = PRODUCT_SET
+                                item = (
+                                    bulk_entry["gcs_url"], "", product_set,
+                                    bulk_entry["bahag_id"], PRODUCT_CATEGORY,
+                                    "bahag_product", f"\'type={bulk_entry['asset_type']}\'", ""
+                                    )
+                                bulk_file.write(f"{','.join(item)}\n")
+                            
+                            if SAVE_MOODSHOTS:
+                                with OUT_MOOD_SHOTS_FILE.open(mode="at", newline="") as ms_file:
+                                    for mood_shot_entry in result["moodshot_entries"]:
+                                        ms_file.write(mood_shot_entry)
                             
                             processed_count += 1
                 

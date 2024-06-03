@@ -16,6 +16,8 @@ Additional docs: https://cloud.google.com/solutions/retail?hl=en#google-cloud-fo
 
 `list_product_sets.py` lists all the product sets in the project's Vision API instance.
 
+`import_index_pipeline.py` runs the entire import and index all assets pipeline (import assets -> prepare reference images & bulk index *.csv files -> bulk index) 
+
 `delete_product_set.py set_name` deletes the given product set with all the reference images from the Vision API (not the physical files in the bucket).
 
 `product_search_cli.py` searches for products similar to the one found at input URL.

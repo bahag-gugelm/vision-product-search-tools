@@ -1,0 +1,76 @@
+name: Build and push Docker image
+on:
+    workflow_call:
+        inputs:
+            environment:
+                description: Github environment
+                required: false
+                type: string
+            docker_image_name:
+                description: Image name
+                required: true
+                type: string
+            grace_docker_images:
+                description: Grace time (in days) to keep older Docker images
+                required: true
+                type: number
+            image_folder:
+                required: true
+                type: string
+            
+        secrets:
+            GOOGLE_CREDENTIALS:
+                required: true
+
+concurrency:
+    group: defaultgroup
+
+jobs:
+    build:
+        name: 'Build Image'
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        env:
+            IMAGE_PATH: ${{vars.PROJECT_REGION}}-docker.pkg.dev/${{vars.PROJECT_ID}}/pc-vision-product-search-tools-images/
+        defaults:
+            run:
+                working-directory: .
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Google Auth
+              id: auth
+              uses: 'google-github-actions/auth@v2'
+              with:
+                credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+            - name: Configure Docker client
+              run: |-
+                    gcloud auth configure-docker
+                    gcloud auth configure-docker ${{vars.PROJECT_REGION}}-docker.pkg.dev
+
+            - name: Cleanup old Docker images
+              run: |-
+                    if [[ "$OSTYPE" == "linux-gnu"* ]]; then # OS Ubuntu
+                        export date=$(date --date="-${{ inputs.grace_docker_images }} days" +'%Y-%m-%d')
+                    elif [[ "$OSTYPE" == "darwin"* ]]; then
+                        export date=$(date -v -"${{ inputs.grace_docker_images }}d" '+%Y-%m-%d')
+                    fi
+
+                    echo $(gcloud artifacts docker images list ${{ env.IMAGE_PATH }}${{ inputs.docker_image_name }} \
+                        --include-tags \
+                        --filter="CREATE_TIME.date('%Y-%m-%d', Z) <= $date" \
+                        --format='value(TAGS)') > ./tags.txt
+
+                    for i in `cat tags.txt`; do
+                        echo "Deleting image $i";
+                        gcloud artifacts docker images delete ${{ env.IMAGE_PATH }}${{ inputs.docker_image_name }}:$i --quiet
+                    done
+
+                    echo "End of cleanup. Images with more then ${{ inputs.grace_docker_images }} days were deleted."
+
+            - name: Build and push Docker image
+              run: |-
+                    docker build --platform linux/amd64 -t ${{ env.IMAGE_PATH }}${{ inputs.docker_image_name }}:${{ github.sha }} .
+                    docker push ${{ env.IMAGE_PATH }}${{ inputs.docker_image_name }}:${{ github.sha }}

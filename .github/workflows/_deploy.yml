@@ -1,0 +1,90 @@
+name: Start Service
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: false
+                type: string
+            branch_name:
+                required: true
+                type: string
+            image_folder:
+                required: true
+                type: string
+            project_number:
+                required: true
+                type: string
+
+
+        secrets:
+            GOOGLE_CREDENTIALS:
+                required: true
+            TF_VAR_postgres_server:
+                required: true
+            TF_VAR_postgres_user:
+                required: true
+            TF_VAR_postgres_password:
+                required: true
+            TF_VAR_postgres_db:
+                required: true
+            TF_VAR_assets_api_user:
+                required: true
+            TF_VAR_assets_api_password:
+                required: true
+
+jobs:
+    terraform:
+        name: Deploy Job Runner
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        env:
+            GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+            TF_VAR_image_folder: ${{ inputs.image_folder }}
+            TF_VAR_image_name: ${{ inputs.image_name }}
+            TF_VAR_docker_image_name: ${{ vars.PROJECT_REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/pc-vision-product-search-tools-images/pc-vision-product-search-tools-prod
+            TF_VAR_git_sha: ${{ github.sha }}
+            
+            TF_VAR_env_name: ${{ inputs.environment }}
+            TF_VAR_project_id: ${{ vars.PROJECT_ID }}
+            TF_VAR_project_region: ${{ vars.PROJECT_REGION }}
+            TF_VAR_storage_bucket_id: ${{vars.STORAGE_BUCKET_ID}}
+
+            TF_VAR_postgres_server: ${{ secrets.TF_VAR_postgres_server }}
+            TF_VAR_postgres_user: ${{ secrets.TF_VAR_postgres_user }}
+            TF_VAR_postgres_password: ${{ secrets.TF_VAR_postgres_password }}
+            TF_VAR_postgres_db: ${{ secrets.TF_VAR_postgres_db }}
+            TF_VAR_assets_api_user: ${{ secrets.TF_VAR_assets_api_user }}
+            TF_VAR_assets_api_password: ${{ secrets.TF_VAR_assets_api_password }}
+
+        defaults:
+            run:
+                shell: bash
+                working-directory: ./terraform/
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v1
+
+            - name: Terraform Format
+              id: fmt
+              run: terraform fmt
+
+            - name: Terraform Init
+              id: init
+              run: terraform init -reconfigure -backend-config="bucket=${{env.TF_VAR_project_id}}-tfstate"
+
+            - name: Terraform Validate
+              id: validate
+              run: terraform validate
+
+            - name: Terraform Plan
+              id: plan
+              run: terraform plan
+              continue-on-error: false
+
+            - name: Terraform Apply
+              id: apply
+              run: terraform apply -auto-approve

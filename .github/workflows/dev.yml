@@ -1,0 +1,40 @@
+name: pc-vision-product-search-tools DEV
+on:
+    push:
+        branches:
+            - dev
+    pull_request:
+        branches:
+            - dev
+
+jobs:
+    build:
+        name: Build and push job runner image
+        uses: ./.github/workflows/_build.yml
+        with:
+            environment: prod
+            docker_image_name: pc-vision-product-search-tools-prod
+            image_folder: pc-vision-product-search-tools-images
+            grace_docker_images: 5
+        
+        secrets:
+            GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    deploy:
+        name: Deploy GCP infrastructure
+        needs: build
+        uses: ./.github/workflows/_deploy.yml
+        with:
+            environment: dev
+            branch_name: master
+            image_folder: pc-vision-product-search-tools-images            
+            project_number: "644560301947"
+
+        secrets:
+            GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+            TF_VAR_postgres_server: ${{ secrets.POSTGRES_SERVER }}
+            TF_VAR_postgres_user: ${{ secrets.POSTGRES_USER }}
+            TF_VAR_postgres_password: ${{ secrets.POSTGRES_PASSWORD }}
+            TF_VAR_postgres_db: ${{ secrets.POSTGRES_DB }}
+            TF_VAR_assets_api_user: ${{ secrets.ASSETS_API_USER }}
+            TF_VAR_assets_api_password: ${{ secrets.ASSETS_API_PASSWORD }}

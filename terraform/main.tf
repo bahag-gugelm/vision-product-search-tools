@@ -129,7 +129,7 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
           name = "ASSETS_API_PASSWORD"
           value_source {
             secret_key_ref {
-              secret = "assets_api_user"
+              secret = "assets_api_password"
               version = "latest"
             }
           }
@@ -159,5 +159,4 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
       launch_stage,
     ]
   }
-  # depends_on = [module.artifact_registry.output]
 }

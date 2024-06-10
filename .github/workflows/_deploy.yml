@@ -43,7 +43,7 @@ jobs:
             TF_VAR_image_name: ${{ inputs.image_name }}
             TF_VAR_docker_image_name: ${{ vars.PROJECT_REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/pc-vision-product-search-tools-images/pc-vision-product-search-tools-prod
             TF_VAR_git_sha: ${{ github.sha }}
-            
+
             TF_VAR_env_name: ${{ inputs.environment }}
             TF_VAR_project_id: ${{ vars.PROJECT_ID }}
             TF_VAR_project_region: ${{ vars.PROJECT_REGION }}

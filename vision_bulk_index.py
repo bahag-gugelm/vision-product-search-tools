@@ -7,11 +7,7 @@ from google.cloud import vision
 
 from utils.google_cloud import bulk_import_product_sets
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s - %(asctime)s %(levelname)s:%(message)s"
-    )
+logging.basicConfig(level=logging.INFO, format="%(name)s - %(asctime)s %(levelname)s:%(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -31,11 +27,8 @@ if __name__ == "__main__":
     bulk_gcs_uri = sys.argv[1]
     try:
         bulk_import_product_sets(
-            client=VISION_CLIENT,
-            project_id=PROJECT_ID,
-            location=PROJECT_REGION,
-            csv_bulk_gcs_uri=bulk_gcs_uri
-            )
+            client=VISION_CLIENT, project_id=PROJECT_ID, location=PROJECT_REGION, csv_bulk_gcs_uri=bulk_gcs_uri
+        )
     except Exception as e:
         logger.exception(e)
         sys.exit(1)

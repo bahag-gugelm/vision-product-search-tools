@@ -4,13 +4,10 @@ import sys
 
 from dotenv import load_dotenv
 from google.cloud import vision
-from utils.google_cloud import purge_products_in_product_set, delete_product_set
 
+from utils.google_cloud import delete_product_set, purge_products_in_product_set
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(name)s - %(asctime)s %(levelname)s:%(message)s"
-    )
+logging.basicConfig(level=logging.INFO, format="%(name)s - %(asctime)s %(levelname)s:%(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -30,16 +27,9 @@ if __name__ == "__main__":
     if ur in ("YES", "yes", "y", "Y"):
         logger.info(f"Purging all products in {product_set}")
         purge_products_in_product_set(
-            project_id=PROJECT_ID,
-            location=PROJECT_REGION,
-            client=VISION_CLIENT,
-            product_set_id=product_set,
-            force=True
-            )
+            project_id=PROJECT_ID, location=PROJECT_REGION, client=VISION_CLIENT, product_set_id=product_set, force=True
+        )
         logger.info(f"Deleting {product_set}")
         delete_product_set(
-            project_id=PROJECT_ID,
-            location=PROJECT_REGION,
-            client=VISION_CLIENT,
-            product_set_id=product_set
+            project_id=PROJECT_ID, location=PROJECT_REGION, client=VISION_CLIENT, product_set_id=product_set
         )

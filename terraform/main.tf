@@ -2,7 +2,7 @@ module "service_account" {
   source = "./modules/service_account"
   project_id = var.project_id
   project_region = var.project_region
-  
+
 }
 
 resource "google_artifact_registry_repository" "pc_vision_product_search_tools_docker" {

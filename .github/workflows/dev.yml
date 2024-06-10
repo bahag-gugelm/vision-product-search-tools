@@ -16,7 +16,7 @@ jobs:
             docker_image_name: pc-vision-product-search-tools-prod
             image_folder: pc-vision-product-search-tools-images
             grace_docker_images: 5
-        
+
         secrets:
             GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
@@ -27,7 +27,7 @@ jobs:
         with:
             environment: dev
             branch_name: master
-            image_folder: pc-vision-product-search-tools-images            
+            image_folder: pc-vision-product-search-tools-images
             project_number: "644560301947"
 
         secrets:

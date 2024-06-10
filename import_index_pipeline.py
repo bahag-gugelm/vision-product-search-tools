@@ -7,11 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from google.cloud import vision
-from google.cloud import storage
-
 from import_assets import run_job as prepare_bulk_import, OUT_DIR
-from utils.google_cloud import bulk_import_product_sets, upload_to_storage
+from utils.google_cloud import bulk_import_product_sets, upload_to_storage, GCS_CLIENT, VISION_CLIENT
 
 
 logging.basicConfig(
@@ -21,13 +18,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-GCP_SA_JSON = os.environ.get("GCP_SA_JSON")
 PROJECT_ID = os.environ.get("PROJECT_ID")
 PROJECT_REGION = os.environ.get("PROJECT_REGION")
 BULK_CSV_BUCKET_ID = os.environ.get("BULK_CSV_BUCKET_ID", "vision-product-search-csv")
 
-GCS_CLIENT = storage.Client.from_service_account_json(GCP_SA_JSON)
-VISION_CLIENT = vision.ProductSearchClient.from_service_account_json(GCP_SA_JSON)
 
 
 if __name__ == "__main__":

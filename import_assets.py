@@ -6,12 +6,13 @@ from pathlib import Path
 from distutils.util import strtobool
 
 from dotenv import load_dotenv
-from google.cloud import storage
 
 import psycopg2
 
+load_dotenv()
+
 from utils.assets_api import BahagAssetsAPI
-from utils.google_cloud import upload_to_storage
+from utils.google_cloud import upload_to_storage, GCS_CLIENT
 from utils.output import RotatingTextWriter
 
 
@@ -20,10 +21,6 @@ logging.basicConfig(
     format="%(name)s - %(asctime)s %(levelname)s:%(message)s"
     )
 logger = logging.getLogger(__name__)
-
-
-load_dotenv()
-
 
 N_THREADS = os.cpu_count() * 2
 
@@ -35,10 +32,7 @@ BAHAG_BASE_API_URL = os.environ.get("BAHAG_BASE_API_URL", "https://api.bauhaus")
 ASSETS_API_USER = os.environ.get("ASSETS_API_USER")
 ASSETS_API_PASSWORD = os.environ.get("ASSETS_API_PASSWORD")
 
-GCP_SA_JSON = os.environ.get("GCP_SA_JSON")
-
 STORAGE_BUCKET_ID = os.environ.get("STORAGE_BUCKET_ID")
-GCS_CLIENT = storage.Client.from_service_account_json(GCP_SA_JSON)
 
 MEDIA_TYPE = ("IMAGE_JPG", )
 

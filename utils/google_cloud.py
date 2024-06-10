@@ -1,8 +1,21 @@
 import logging
 from typing import IO
+import os
 
 from google.cloud import storage, vision
 
+
+GCP_SA_JSON = os.environ.get("GCP_SA_JSON")
+
+if GCP_SA_JSON:
+    GCS_CLIENT = storage.Client.from_service_account_json(GCP_SA_JSON)
+    VISION_CLIENT = vision.ProductSearchClient.from_service_account_json(GCP_SA_JSON)
+    ANNOTATION_CLIENT = vision.ImageAnnotatorClient.from_service_account_json(GCP_SA_JSON)
+else:
+    GCS_CLIENT = storage.Client()
+    VISION_CLIENT = vision.ProductSearchClient()
+    ANNOTATION_CLIENT = vision.ImageAnnotatorClient()
+    
 
 logger = logging.getLogger(__name__)
 

@@ -5,6 +5,13 @@ module "service_account" {
 
 }
 
+module "cloud_storage" {
+  source = "./modules/cloud_storage"
+  project_region = var.project_region
+  storage_bucket_id = var.storage_bucket_id
+
+}
+
 resource "google_artifact_registry_repository" "pc_vision_product_search_tools_docker" {
   provider      = google-beta
   location      = var.project_region

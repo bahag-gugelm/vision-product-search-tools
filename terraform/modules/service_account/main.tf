@@ -8,7 +8,7 @@ resource "google_project_iam_binding" "pc_vision_product_search_tools_sa" {
   for_each = toset([
     "roles/storage.objectCreator",
     "roles/storage.objectViewer",
-    "roles/storage.admin",
+    "roles/cloudscheduler.admin",
   ])
   role = each.key
   members = [

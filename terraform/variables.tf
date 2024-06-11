@@ -4,6 +4,9 @@ variable "project_id" {
 variable "project_region" {
   type = string
 }
+variable "project_number" {
+  type = string
+}
 variable "env_name" {
   type = string
 }

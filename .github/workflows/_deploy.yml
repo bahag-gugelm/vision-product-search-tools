@@ -47,6 +47,7 @@ jobs:
             TF_VAR_env_name: ${{ inputs.environment }}
             TF_VAR_project_id: ${{ vars.PROJECT_ID }}
             TF_VAR_project_region: ${{ vars.PROJECT_REGION }}
+            TF_VAR_project_number: ${{ inputs.project_number }}
             TF_VAR_storage_bucket_id: ${{vars.STORAGE_BUCKET_ID}}
 
             TF_VAR_postgres_server: ${{ secrets.TF_VAR_postgres_server }}

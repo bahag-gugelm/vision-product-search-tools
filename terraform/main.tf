@@ -2,14 +2,12 @@ module "service_account" {
   source = "./modules/service_account"
   project_id = var.project_id
   project_region = var.project_region
-
 }
 
 module "cloud_storage" {
   source = "./modules/cloud_storage"
   project_region = var.project_region
   storage_bucket_id = var.storage_bucket_id
-
 }
 
 resource "google_artifact_registry_repository" "pc_vision_product_search_tools_docker" {
@@ -165,5 +163,28 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
     ignore_changes = [
       launch_stage,
     ]
+  }
+}
+
+resource "google_cloud_scheduler_job" "vision_import_assets" {
+  provider         = google-beta
+  name             = "vision_import_assets_job"
+  description      = ""
+  schedule         = "0 0 1 * *"
+  attempt_deadline = "320s"
+  project          = var.project_id
+  region           = var.project_region
+
+  retry_config {
+    retry_count = 3
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.project_region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${var.project_number}/jobs/${google_cloud_run_v2_job.vision_import_assets.name}:run"
+
+    oauth_token {
+      service_account_email = "${module.service_account.job_runner_sa_email}"
+    }
   }
 }

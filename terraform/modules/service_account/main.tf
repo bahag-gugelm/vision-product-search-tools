@@ -9,6 +9,7 @@ resource "google_project_iam_binding" "pc_vision_product_search_tools_sa" {
     "roles/storage.objectCreator",
     "roles/storage.objectViewer",
     "roles/cloudscheduler.admin",
+    "roles/run.invoker"
   ])
   role = each.key
   members = [

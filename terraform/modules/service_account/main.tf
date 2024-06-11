@@ -6,8 +6,7 @@ resource "google_service_account" "pc_vision_product_search_tools_sa" {
 resource "google_project_iam_binding" "pc_vision_product_search_tools_sa" {
   project = "${var.project_id}"
   for_each = toset([
-    "roles/storage.objectCreator",
-    "roles/storage.objectViewer",
+    "roles/storage.admin",
     "roles/cloudscheduler.admin",
     "roles/run.invoker"
   ])

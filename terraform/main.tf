@@ -74,16 +74,17 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
   location = var.project_region
 
   template {
+    parallelism = 1
     task_count = 1
     template {
-      timeout = "10800s" # 3 hours
+      timeout = "21600s" # 4 hours
       service_account = "${module.service_account.job_runner_sa_email}"
       containers {
         image = "${var.docker_image_name}:${var.git_sha}"
         resources {
           limits = {
             cpu    = "8"
-            memory = "8192Mi"
+            memory = "4096Mi"
           }
         }
         env {
@@ -170,8 +171,9 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
 resource "google_cloud_scheduler_job" "vision_import_assets" {
   provider         = google-beta
   name             = "vision_import_assets_job"
-  description      = ""
+  description      = "Runs product search import and indexing pipeline"
   schedule         = "0 0 1 * *"
+  time_zone        = "Europe/Berlin"
   attempt_deadline = "320s"
   project          = var.project_id
   region           = var.project_region

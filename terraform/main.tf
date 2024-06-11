@@ -74,6 +74,7 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
   location = var.project_region
 
   template {
+    task_count = 1
     template {
       timeout = "10800s" # 3 hours
       service_account = "${module.service_account.job_runner_sa_email}"

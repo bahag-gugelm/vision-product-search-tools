@@ -9,7 +9,7 @@ from product_search_cli import get_relevant_products
 def match_image(image_uri: str = None, image_src: Image = None) -> Tuple[Image, str]:
     try:
         annotated_image, matches = get_relevant_products(image_uri, image_src)
-    except Exception as e:
+    except Exception:
         return None, "Nothing found :/"
 
     output = list()

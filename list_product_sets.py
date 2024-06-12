@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from utils.google_cloud import VISION_CLIENT, list_product_sets
+from utils.google_cloud import VISION_CLIENT, list_product_sets  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(name)s - %(asctime)s %(levelname)s:%(message)s")
 

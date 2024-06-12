@@ -2,7 +2,24 @@ import logging
 import os
 from typing import IO
 
+from google.api_core import exceptions
+from google.api_core.retry import Retry
 from google.cloud import storage, vision
+
+_RETRIABLE_TYPES = [
+    exceptions.TooManyRequests,  # 429
+    exceptions.InternalServerError,  # 500
+    exceptions.BadGateway,  # 502
+    exceptions.ServiceUnavailable,  # 503
+]
+
+
+def is_retryable(exc):
+    return isinstance(exc, _RETRIABLE_TYPES)
+
+
+RETRY_POLICY = Retry(predicate=is_retryable)
+
 
 GCP_SA_JSON = os.environ.get("GCP_SA_JSON")
 
@@ -27,7 +44,7 @@ def upload_to_storage(
 ):
     bucket = client.bucket(bucket_id)
     blob = bucket.blob(remote_fname)
-    blob.upload_from_file(file)
+    blob.upload_from_file(file, timeout=300.0, retry=RETRY_POLICY)
     logger.info(f"Uploaded {remote_fname} to the storage bucket.")
     return f"gs://{bucket_id}/{remote_fname}"
 
@@ -53,7 +70,7 @@ def bulk_import_product_sets(
     input_config = vision.ImportProductSetsInputConfig(gcs_source=gcs_source)
 
     # Import the product sets from the input URI.
-    response = client.import_product_sets(parent=location_path, input_config=input_config)
+    response = client.import_product_sets(parent=location_path, input_config=input_config, retry=RETRY_POLICY)
 
     logger.info(f"Processing operation name: {response.operation.name}")
     # synchronous check of operation status

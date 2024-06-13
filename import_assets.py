@@ -137,7 +137,7 @@ def process(assets_client: BahagAssetsAPI, bahag_id: str):
 
         result["bulk_entries"].append(bulk_entry)
 
-        return result
+    return result
 
 
 def run_job():
@@ -181,7 +181,7 @@ def run_job():
 
     logger.info(
         f"Done, saved {processed_count} suitable items out of {total_count} in total,\n"
-        f"{bulk_file.total_lines_written} rows written in {bulk_file.rollover_count + 1} files."
+        f"{bulk_file.total_lines_written} item rows written in {bulk_file.rollover_count + 1} files."
     )
 
 

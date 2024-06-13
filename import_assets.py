@@ -156,7 +156,7 @@ def run_job():
                         if result:
                             for bulk_entry in result["bulk_entries"]:
                                 csv_lines_saved = bulk_file.total_lines_written
-                                if not csv_lines_saved % 1_000_000:
+                                if csv_lines_saved > 0 and not csv_lines_saved % 1_000_000:
                                     product_set = f"{PRODUCT_SET}_{str(csv_lines_saved).rstrip('0')}"
                                 else:
                                     product_set = PRODUCT_SET

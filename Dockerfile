@@ -15,4 +15,4 @@ COPY . /opt/image_search_tools
 RUN pip install -r requirements.txt
 
 # run job
-CMD python import_index_pipeline.py
+CMD python import_index_pipeline.py > import_index_pipeline.log 2>&1

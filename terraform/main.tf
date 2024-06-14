@@ -77,13 +77,13 @@ resource "google_cloud_run_v2_job" "vision_import_assets" {
     parallelism = 1
     task_count = 1
     template {
-      timeout = "21600s" # 4 hours
+      timeout = "43200s" # 8 hours
       service_account = "${module.service_account.job_runner_sa_email}"
       containers {
         image = "${var.docker_image_name}:${var.git_sha}"
         resources {
           limits = {
-            cpu    = "8"
+            cpu    = "4"
             memory = "4096Mi"
           }
         }

@@ -201,7 +201,7 @@ def purge_products_in_product_set(
         }
     )
 
-    operation.result(timeout=500)
+    operation.result(timeout=3600)
 
     logger.info("Deleted products in product set.")
 

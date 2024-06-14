@@ -71,7 +71,8 @@ class BahagAssetsAPI:
     def get_asset_file(self, url: str):
         r = self.session.get(url=url, stream=True)
         filename = requests_response_to_filename(r)
-        filesize = r.headers["Content-length"]
-        if r.ok:
-            return (filename, int(filesize), r.content)
+        filesize = r.headers.get("Content-length")
+        if r.ok and r.content:
+            filesize = filesize and int(filesize) or 0
+            return (filename, filesize, r.content)
         self.logger.warning(f"Can't get remote file because of {r.status_code}")

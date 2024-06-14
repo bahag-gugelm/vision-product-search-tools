@@ -17,7 +17,7 @@ from utils.output import RotatingTextWriter  # noqa: E402
 logging.basicConfig(level=logging.INFO, format="%(name)s - %(asctime)s %(levelname)s:%(message)s")
 logger = logging.getLogger(__name__)
 
-N_THREADS = os.cpu_count() * 2
+N_THREADS = os.cpu_count() * 8
 
 POSTGRES_SERVER = os.environ.get("POSTGRES_SERVER")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")

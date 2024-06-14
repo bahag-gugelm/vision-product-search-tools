@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 import sys
 import time
 
@@ -37,6 +38,12 @@ if __name__ == "__main__":
             )
             time.sleep(10)
         logger.info("Done, it's a success!")
+        upload_to_storage(
+                bucket_id=BULK_CSV_BUCKET_ID,
+                client=GCS_CLIENT,
+                file=Path("import_index_pipeline.log").open(encoding="utf8"),
+                remote_fname=fpath.name,
+            )
     except Exception as e:
         logger.exception(f"Job run has failed because of {str(e)}")
         sys.exit(1)

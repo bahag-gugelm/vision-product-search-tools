@@ -15,6 +15,8 @@ from utils.google_cloud import GCS_CLIENT, VISION_CLIENT, bulk_import_product_se
 logging.basicConfig(level=logging.INFO, format="%(name)s - %(asctime)s %(levelname)s:%(message)s")
 logger = logging.getLogger(__name__)
 
+# setup in Dockerfile
+LOGFILE_PATH = Path("import_index_pipeline.log")
 
 PROJECT_ID = os.environ.get("PROJECT_ID")
 PROJECT_REGION = os.environ.get("PROJECT_REGION")
@@ -22,6 +24,7 @@ BULK_CSV_BUCKET_ID = os.environ.get("BULK_CSV_BUCKET_ID", "vision-product-search
 
 
 if __name__ == "__main__":
+    error = False
     logger.info("Starting import and indexing pipeline. Getting assets.")
     try:
         prepare_bulk_import()
@@ -38,12 +41,16 @@ if __name__ == "__main__":
             )
             time.sleep(10)
         logger.info("Done, it's a success!")
-        upload_to_storage(
-                bucket_id=BULK_CSV_BUCKET_ID,
-                client=GCS_CLIENT,
-                file=Path("import_index_pipeline.log").open(encoding="utf8"),
-                remote_fname=fpath.name,
-            )
     except Exception as e:
         logger.exception(f"Job run has failed because of {str(e)}")
-        sys.exit(1)
+        error = True
+    finally:
+        if LOGFILE_PATH.exists():
+            upload_to_storage(
+                bucket_id=BULK_CSV_BUCKET_ID,
+                client=GCS_CLIENT,
+                file=LOGFILE_PATH.open(encoding="utf8"),
+                remote_fname=fpath.name,
+                )
+        if error:
+            sys.exit(1)

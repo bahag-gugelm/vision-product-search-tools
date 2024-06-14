@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 bucket_id=BULK_CSV_BUCKET_ID,
                 client=GCS_CLIENT,
                 file=LOGFILE_PATH.open(encoding="utf8"),
-                remote_fname=fpath.name,
+                remote_fname=LOGFILE_PATH.name,
                 )
         if error:
             sys.exit(1)

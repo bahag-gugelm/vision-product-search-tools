@@ -24,7 +24,6 @@ BULK_CSV_BUCKET_ID = os.environ.get("BULK_CSV_BUCKET_ID", "vision-product-search
 
 
 if __name__ == "__main__":
-    error = False
     logger.info("Starting import and indexing pipeline. Getting assets.")
     try:
         prepare_bulk_import()
@@ -43,7 +42,7 @@ if __name__ == "__main__":
         logger.info("Done, it's a success!")
     except Exception as e:
         logger.exception(f"Job run has failed because of {str(e)}")
-        error = True
+        sys.exit(1)
     finally:
         if LOGFILE_PATH.exists():
             upload_to_storage(
@@ -52,5 +51,3 @@ if __name__ == "__main__":
                 file=LOGFILE_PATH.open(encoding="utf8"),
                 remote_fname=LOGFILE_PATH.name,
                 )
-        if error:
-            sys.exit(1)

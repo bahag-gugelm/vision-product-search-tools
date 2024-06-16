@@ -28,6 +28,7 @@ if __name__ == "__main__":
     try:
         prepare_bulk_import()
         logger.info("Assets saved and bulk import files prepared. Starting indexing job.")
+        files_to_index = list()
         for fpath in OUT_DIR.glob("*.csv"):
             remote_csv_uri = upload_to_storage(
                 bucket_id=BULK_CSV_BUCKET_ID,
@@ -35,8 +36,11 @@ if __name__ == "__main__":
                 file=fpath.open(encoding="utf8"),
                 remote_fname=fpath.name,
             )
+            files_to_index.append(remote_csv_uri)
+        
+        for remote_csv in files_to_index:
             bulk_import_product_sets(
-                client=VISION_CLIENT, project_id=PROJECT_ID, location=PROJECT_REGION, csv_bulk_gcs_uri=remote_csv_uri
+                client=VISION_CLIENT, project_id=PROJECT_ID, location=PROJECT_REGION, csv_bulk_gcs_uri=remote_csv
             )
             time.sleep(10)
         logger.info("Done, it's a success!")
@@ -45,6 +49,7 @@ if __name__ == "__main__":
         sys.exit(1)
     finally:
         if LOGFILE_PATH.exists():
+            logger.info(f"Uploading job log file to {BULK_CSV_BUCKET_ID}")
             upload_to_storage(
                 bucket_id=BULK_CSV_BUCKET_ID,
                 client=GCS_CLIENT,

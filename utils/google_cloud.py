@@ -74,7 +74,7 @@ def bulk_import_product_sets(
 
     logger.info(f"Processing operation name: {response.operation.name}")
     # synchronous check of operation status
-    result = response.result()
+    result = response.result(timeout=1800.0, retry=RETRY_POLICY)
 
     for idx, status in enumerate(result.statuses):
         # Check the status of reference image

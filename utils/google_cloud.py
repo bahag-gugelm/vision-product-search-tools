@@ -44,7 +44,7 @@ def upload_to_storage(
 ):
     bucket = client.bucket(bucket_id)
     blob = bucket.blob(remote_fname)
-    blob.upload_from_file(file, timeout=1800, retry=RETRY_POLICY)
+    blob.upload_from_file(file, timeout=1800.0, retry=RETRY_POLICY)
     logger.info(f"Uploaded {remote_fname} to the storage bucket.")
     return f"gs://{bucket_id}/{remote_fname}"
 
@@ -70,7 +70,7 @@ def bulk_import_product_sets(
     input_config = vision.ImportProductSetsInputConfig(gcs_source=gcs_source)
 
     # Import the product sets from the input URI.
-    response = client.import_product_sets(parent=location_path, input_config=input_config, timeout=1800, retry=RETRY_POLICY)
+    response = client.import_product_sets(parent=location_path, input_config=input_config, timeout=1800.0, retry=RETRY_POLICY)
 
     logger.info(f"Processing operation name: {response.operation.name}")
     # synchronous check of operation status
@@ -199,7 +199,7 @@ def purge_products_in_product_set(
             # purge. If force is not set to True, the service raises an exception.
             "force": force,
         },
-        timeout=1800,
+        timeout=1800.0,
         retry=RETRY_POLICY
     )
 
@@ -217,5 +217,5 @@ def delete_product_set(project_id: str, location: str, client: vision.ProductSea
     product_set_path = client.product_set_path(project=project_id, location=location, product_set=product_set_id)
 
     # Delete the product set.
-    client.delete_product_set(name=product_set_path, timeout=1800, retry=RETRY_POLICY)
+    client.delete_product_set(name=product_set_path, timeout=1800.0, retry=RETRY_POLICY)
     logger.info("Product set deleted.")
